@@ -1,18 +1,23 @@
 {
-  "CONTRACT_ADDRESS": "0x827acb09a2dc20e39c9aad7f7190d9bc53534192",
-  "SCAN_LINK": "https://polygonscan.com/token/0x827acb09a2dc20e39c9aad7f7190d9bc53534192",
+  "CONTRACT_ADDRESS": "0x4855Cc08211dF7C6b5718bd96705d778eD67F63B",
+  "SCAN_LINK": "https://polygonscan.com/address/0x4855Cc08211dF7C6b5718bd96705d778eD67F63B",
   "NETWORK": {
     "NAME": "Polygon",
     "SYMBOL": "Matic",
     "ID": 137
   },
-  "NFT_NAME": "Nerdy Coder Clones",
-  "SYMBOL": "NCC",
-  "MAX_SUPPLY": 1000,
-  "WEI_COST": 75000000000000000,
-  "DISPLAY_COST": 0.075,
-  "GAS_LIMIT": 285000,
-  "MARKETPLACE": "Opeansea",
-  "MARKETPLACE_LINK": "https://opensea.io/collection/nerdy-coder-clones",
-  "SHOW_BACKGROUND": true
+  "NFT_NAME": "Daturians4Ukraine",
+  "SYMBOL": "DATU4UA",
+  "MAX_SUPPLY": 500,
+  "WEI_COST": 4000000000000000000,
+  "DISPLAY_COST": 4.0,
+  "GAS_PRICE": 10000000,
+  "GAS_LIMIT": 3000000,
+  "MAX_PRIORITY_FEE": 55000000000,
+  "MAX_FEE_PER_GAS": 60000000000,
+  "MARKETPLACE": "Opensea",
+  "MARKETPLACE_LINK": "https://opensea.io/collection/daturians4ukraine",
+  "SHOW_BACKGROUND": true,
+  "NETWORK_URL": "https://polygon-mainnet.infura.io/v3/0470019fdf234b2cad2f660b9070bb45",
+  "INFURA_ID": "0470019fdf234b2cad2f660b9070bb45"
 }

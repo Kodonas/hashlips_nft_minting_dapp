@@ -31,63 +31,73 @@ const updateAccountRequest = (payload) => {
   };
 };
 
-export const connect = () => {
+export const connect = (connectedProvider) => {
   return async (dispatch) => {
     dispatch(connectRequest());
-    const abiResponse = await fetch("/config/abi.json", {
+    const abiResponse = await fetch("./config/abiDaturians4Ukraine.json", {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
     });
     const abi = await abiResponse.json();
-    const configResponse = await fetch("/config/config.json", {
+    const configResponse = await fetch("./config/config.json", {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
     });
     const CONFIG = await configResponse.json();
-    const { ethereum } = window;
-    const metamaskIsInstalled = ethereum && ethereum.isMetaMask;
-    if (metamaskIsInstalled) {
-      Web3EthContract.setProvider(ethereum);
-      let web3 = new Web3(ethereum);
-      try {
-        const accounts = await ethereum.request({
-          method: "eth_requestAccounts",
-        });
-        const networkId = await ethereum.request({
-          method: "net_version",
-        });
-        if (networkId == CONFIG.NETWORK.ID) {
-          const SmartContractObj = new Web3EthContract(
-            abi,
-            CONFIG.CONTRACT_ADDRESS
-          );
-          dispatch(
-            connectSuccess({
-              account: accounts[0],
-              smartContract: SmartContractObj,
-              web3: web3,
-            })
-          );
-          // Add listeners start
-          ethereum.on("accountsChanged", (accounts) => {
-            dispatch(updateAccount(accounts[0]));
-          });
-          ethereum.on("chainChanged", () => {
-            window.location.reload();
-          });
-          // Add listeners end
-        } else {
-          dispatch(connectFailed(`Change network to ${CONFIG.NETWORK.NAME}.`));
+    Web3EthContract.setProvider(connectedProvider);
+    let web3 = new Web3(connectedProvider); // inits web3 with the provider
+    console.log('web3', web3);
+    try {
+      // get my address
+      const accounts = await web3.eth.getAccounts();
+      console.log('accounts', accounts);
+
+      //get the network id
+      const networkId = await web3.eth.net.getId();
+      console.log('networkId', networkId);
+
+      if (networkId == CONFIG.NETWORK.ID) {
+        const SmartContractObj = new Web3EthContract(
+          abi,
+          CONFIG.CONTRACT_ADDRESS
+        );
+        console.log(SmartContractObj)
+        dispatch(
+          connectSuccess({
+            account: accounts[0],
+            smartContract: SmartContractObj,
+            web3: web3,
+          })
+        );
+
+        try {
+          const { ethereum } = window;
+          if (ethereum) {
+            // Add listeners start
+            ethereum.on("accountsChanged", (accounts) => {
+              dispatch(updateAccount(accounts[0]));
+            });
+            ethereum.on("chainChanged", () => {
+              window.location.reload();
+            });
+          }
+        } catch (error) {
+          console.log('most likely not using metamask', error);
         }
-      } catch (err) {
-        dispatch(connectFailed("Something went wrong."));
+        // Add listeners end
+      } else {
+        console.log("Wrong network");
+        alert("Wrong network, please switch to Polygon");
+        dispatch(connectFailed(`Change network to ${CONFIG.NETWORK.NAME}.`));
       }
-    } else {
-      dispatch(connectFailed("Install Metamask."));
+    } catch (err) {
+      console.log(err);
+      alert("Something went wrong, please contact the team");
+      dispatch(connectFailed("Something went wrong."));
     }
   };
 };

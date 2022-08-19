@@ -4,6 +4,11 @@ import { connect } from "./redux/blockchain/blockchainActions";
 import { fetchData } from "./redux/data/dataActions";
 import * as s from "./styles/globalStyles";
 import styled from "styled-components";
+import Web3Modal from "web3modal";
+import WalletConnectProvider from "@walletconnect/web3-provider";
+// import CoinbaseWalletSDK from '@coinbase/wallet-sdk';
+// import WalletLink from 'walletlink';
+
 
 const truncate = (input, len) =>
   input.length > len ? `${input.substring(0, len)}...` : input;
@@ -75,9 +80,7 @@ export const StyledLogo = styled.img`
 `;
 
 export const StyledImg = styled.img`
-  box-shadow: 0px 5px 11px 2px rgba(0, 0, 0, 0.7);
-  border: 4px dashed var(--secondary);
-  background-color: var(--accent);
+
   border-radius: 100%;
   width: 200px;
   @media (min-width: 900px) {
@@ -99,7 +102,7 @@ function App() {
   const blockchain = useSelector((state) => state.blockchain);
   const data = useSelector((state) => state.data);
   const [claimingNft, setClaimingNft] = useState(false);
-  const [feedback, setFeedback] = useState(`Click buy to mint your NFT.`);
+  const [feedback, setFeedback] = useState(`Click "BUY" to mint DATURIANS NFT.`);
   const [mintAmount, setMintAmount] = useState(1);
   const [CONFIG, SET_CONFIG] = useState({
     CONTRACT_ADDRESS: "",
@@ -114,41 +117,69 @@ function App() {
     MAX_SUPPLY: 1,
     WEI_COST: 0,
     DISPLAY_COST: 0,
-    GAS_LIMIT: 0,
+    GAS_LIMIT: 500000,
+    GAS_PRICE: 100,
     MARKETPLACE: "",
     MARKETPLACE_LINK: "",
     SHOW_BACKGROUND: false,
   });
 
+  // web3modal setup
+  const providerOptions = {
+    walletconnect: {
+      package: WalletConnectProvider,
+      options: {
+        chainId: CONFIG.NETWORK.ID,
+        infuraId: CONFIG.INFURA_ID,
+        rpc: {
+          137: CONFIG.NETWORK_URL
+        },
+      },
+      network: "matic"
+    }
+  };
+
+  const web3Modal = new Web3Modal({
+    cacheProvider: false,
+    providerOptions: providerOptions
+  });
+
+
   const claimNFTs = () => {
     let cost = CONFIG.WEI_COST;
     let gasLimit = CONFIG.GAS_LIMIT;
+    let gasPrice = CONFIG.GAS_PRICE;
     let totalCostWei = String(cost * mintAmount);
     let totalGasLimit = String(gasLimit * mintAmount);
-    console.log("Cost: ", totalCostWei);
-    console.log("Gas limit: ", totalGasLimit);
+    let maxPriorityFee = String(CONFIG.MAX_PRIORITY_FEE);
+    let maxFeeGas = String(CONFIG.MAX_FEE_PER_GAS);
     setFeedback(`Minting your ${CONFIG.NFT_NAME}...`);
     setClaimingNft(true);
     blockchain.smartContract.methods
       .mint(mintAmount)
       .send({
-        gasLimit: String(totalGasLimit),
+        gas: String(totalGasLimit),
+        maxPriorityFeePerGas: String(maxPriorityFee),
+        maxFeePerGas: String(maxFeeGas),
         to: CONFIG.CONTRACT_ADDRESS,
         from: blockchain.account,
         value: totalCostWei,
       })
       .once("error", (err) => {
-        console.log(err);
-        setFeedback("Sorry, something went wrong please try again later.");
+        setFeedback("Oopsy, something went wrong! Please try again.");
         setClaimingNft(false);
       })
       .then((receipt) => {
         console.log(receipt);
         setFeedback(
-          `WOW, the ${CONFIG.NFT_NAME} is yours! go visit Opensea.io to view it.`
+          `Congrats, the ${CONFIG.NFT_NAME} is yours! go visit Opensea.io to view it.`
         );
         setClaimingNft(false);
         dispatch(fetchData(blockchain.account));
+      }).catch(e => {
+        console.log(e);
+        setFeedback("It seems that user cancelled the action.");
+        setClaimingNft(false);
       });
   };
 
@@ -162,8 +193,8 @@ function App() {
 
   const incrementMintAmount = () => {
     let newMintAmount = mintAmount + 1;
-    if (newMintAmount > 10) {
-      newMintAmount = 10;
+    if (newMintAmount > 20) {
+      newMintAmount = 20;
     }
     setMintAmount(newMintAmount);
   };
@@ -205,7 +236,7 @@ function App() {
         <s.SpacerSmall />
         <ResponsiveWrapper flex={1} style={{ padding: 24 }} test>
           <s.Container flex={1} jc={"center"} ai={"center"}>
-            <StyledImg alt={"example"} src={"/config/images/example.gif"} />
+            <StyledImg alt={"example"} src={"/config/images/example.png"} />
           </s.Container>
           <s.SpacerLarge />
           <s.Container
@@ -216,8 +247,7 @@ function App() {
               backgroundColor: "var(--accent)",
               padding: 24,
               borderRadius: 24,
-              border: "4px dashed var(--secondary)",
-              boxShadow: "0px 5px 11px 2px rgba(0,0,0,0.7)",
+              boxShadow: "0px 5px 5px 5px rgba(0,0,0,0.2)",
             }}
           >
             <s.TextTitle
@@ -286,11 +316,18 @@ function App() {
                     </s.TextDescription>
                     <s.SpacerSmall />
                     <StyledButton
-                      onClick={(e) => {
-                        e.preventDefault();
-                        dispatch(connect());
-                        getData();
-                      }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          web3Modal.clearCachedProvider();
+                          web3Modal.connect().then((connectedProvider) => {
+                            dispatch(connect(connectedProvider));
+                            getData();
+                          }).catch(e => {
+                            console.log(e);
+                            setFeedback("It seems that user closed the WalletConnect pop-up.");
+                            setClaimingNft(false);
+                          });
+                        }}
                     >
                       CONNECT
                     </StyledButton>
@@ -373,7 +410,7 @@ function App() {
           <s.Container flex={1} jc={"center"} ai={"center"}>
             <StyledImg
               alt={"example"}
-              src={"/config/images/example.gif"}
+              src={"/config/images/example.png"}
               style={{ transform: "scaleX(-1)" }}
             />
           </s.Container>
@@ -386,8 +423,9 @@ function App() {
               color: "var(--primary-text)",
             }}
           >
-            Please make sure you are connected to the right network (
-            {CONFIG.NETWORK.NAME} Mainnet) and the correct address. Please note:
+            DISCLAIMER: ALL SALES AND ROYALTIES WILL BE TRANSFERRED TO UKRAINE'S CRYPTO WALLET.
+            Please make sure you are connected to the correct network (
+            {CONFIG.NETWORK.NAME} Mainnet) on your metamask. Please note:
             Once you make the purchase, you cannot undo this action.
           </s.TextDescription>
           <s.SpacerSmall />

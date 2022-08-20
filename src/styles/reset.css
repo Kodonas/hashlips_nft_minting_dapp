@@ -154,10 +154,12 @@ body::-webkit-scrollbar {
 body {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+  font-family: 'Trispace', sans-serif;
 }
 
 html {
-  background-color: "#4C4C4C";
+  background-color: "#E9EDFF";
+  font-family: 'Trispace', sans-serif;
 }
 
 div {
@@ -166,4 +168,41 @@ div {
   -ms-user-select: none;
   user-select: none;
   -o-user-select: none;
+}
+p {
+  font-size: 14px !important;
+}
+.book {
+  background-image: url("encyclopedia.png");
+}
+.book:hover {
+  background-image: url("encyclopedia_open.png");
+  background-position: center;
+  background-size: cover;
+  width: 700px;
+  height: 393.75px;
+  align-items: center;
+}
+.disclaimer {
+  font-size: 12px !important;
+}
+.top-logo {
+  display: flex;
+  align-items: center;
+}
+.contract-address {
+  background-color: #D8DFFC;
+  padding: 20px;
+  border-radius: 0.375rem;
+}
+.opensea {
+  color: #FF4360 !important;
+  font-weight: 800;
+}
+.text-title {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+}
+.mint-number {
+  font-size: 26px !important;
 }

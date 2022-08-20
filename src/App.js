@@ -71,13 +71,23 @@ export const ResponsiveWrapper = styled.div`
 `;
 
 export const StyledLogo = styled.img`
-  width: 200px;
+  width: 100px;
   @media (min-width: 767px) {
-    width: 300px;
+    width: 150px;
   }
   transition: width 0.5s;
   transition: height 0.5s;
 `;
+
+export const StyledBook = styled.img`
+  width: 600px;
+  @media (min-width: 767px) {
+    width: 700px;
+  }
+  transition: width 0.5s;
+  transition: height 0.5s;
+`;
+
 
 export const StyledImg = styled.img`
 
@@ -232,48 +242,58 @@ function App() {
         style={{ padding: 24, backgroundColor: "var(--primary)" }}
         image={CONFIG.SHOW_BACKGROUND ? "/config/images/bg.png" : null}
       >
-        <StyledLogo alt={"logo"} src={"/config/images/logo.png"} />
-        <s.SpacerSmall />
-        <ResponsiveWrapper flex={1} style={{ padding: 24 }} test>
-          <s.Container flex={1} jc={"center"} ai={"center"}>
-            <StyledImg alt={"example"} src={"/config/images/example.png"} />
-          </s.Container>
-          <s.SpacerLarge />
-          <s.Container
-            flex={2}
-            jc={"center"}
-            ai={"center"}
+      <div className="top-logo">
+        <StyledLogo alt={"logo"} className={"logo"} src={"/config/images/logo.svg"} />
+          <s.TextTitle className={"mint-number"}
             style={{
-              backgroundColor: "var(--accent)",
-              padding: 24,
-              borderRadius: 24,
-              boxShadow: "0px 5px 5px 5px rgba(0,0,0,0.2)",
+              textAlign: "center",
+              fontSize: 32,
+              fontWeight: "bold",
+              color: "var(--accent-text)",
             }}
           >
-            <s.TextTitle
-              style={{
-                textAlign: "center",
-                fontSize: 50,
-                fontWeight: "bold",
-                color: "var(--accent-text)",
-              }}
-            >
               {data.totalSupply} / {CONFIG.MAX_SUPPLY}
             </s.TextTitle>
-            <s.TextDescription
+        </div>
+         <s.TextDescription
               style={{
                 textAlign: "center",
                 color: "var(--primary-text)",
               }}
             >
-              <StyledLink target={"_blank"} href={CONFIG.SCAN_LINK}>
-                {truncate(CONFIG.CONTRACT_ADDRESS, 15)}
-              </StyledLink>
-            </s.TextDescription>
-            <s.SpacerSmall />
+            <StyledLink className={"contract-address"} target={"_blank"} href={CONFIG.SCAN_LINK}>
+              {truncate(CONFIG.CONTRACT_ADDRESS, 42)}
+            </StyledLink>
+          </s.TextDescription>
+        <StyledBook alt={"book"} className={"book"} src={"/config/images/encyclopedia.png"}
+        onClick={(e) => {
+            e.preventDefault();
+            web3Modal.clearCachedProvider();
+            web3Modal.connect().then((connectedProvider) => {
+              dispatch(connect(connectedProvider));
+              getData();
+            }).catch(e => {
+              console.log(e);
+              setFeedback("It seems that user closed the WalletConnect pop-up.");
+              setClaimingNft(false);
+            });
+          }}/>
+        <ResponsiveWrapper flex={1} style={{ padding: 24 }} test>
+          <s.Container flex={1} jc={"center"} ai={"center"}>
+          </s.Container>
+          <s.Container
+            flex={2}
+            jc={"center"}
+            ai={"center"}
+            style={{
+              backgroundColor: "var(--primary)",
+              padding: 24,
+              borderRadius: 24,
+            }}
+          >
             {Number(data.totalSupply) >= CONFIG.MAX_SUPPLY ? (
               <>
-                <s.TextTitle
+                <s.TextTitle className="text-title"
                   style={{ textAlign: "center", color: "var(--accent-text)" }}
                 >
                   The sale has ended.
@@ -283,57 +303,18 @@ function App() {
                 >
                   You can still find {CONFIG.NFT_NAME} on
                 </s.TextDescription>
-                <s.SpacerSmall />
-                <StyledLink target={"_blank"} href={CONFIG.MARKETPLACE_LINK}>
+                <StyledLink className="opensea" target={"_blank"} href={CONFIG.MARKETPLACE_LINK}>
                   {CONFIG.MARKETPLACE}
                 </StyledLink>
               </>
             ) : (
               <>
-                <s.TextTitle
-                  style={{ textAlign: "center", color: "var(--accent-text)" }}
-                >
-                  1 {CONFIG.SYMBOL} costs {CONFIG.DISPLAY_COST}{" "}
-                  {CONFIG.NETWORK.SYMBOL}.
-                </s.TextTitle>
-                <s.SpacerXSmall />
-                <s.TextDescription
-                  style={{ textAlign: "center", color: "var(--accent-text)" }}
-                >
-                  Excluding gas fees.
-                </s.TextDescription>
-                <s.SpacerSmall />
+
                 {blockchain.account === "" ||
                 blockchain.smartContract === null ? (
                   <s.Container ai={"center"} jc={"center"}>
-                    <s.TextDescription
-                      style={{
-                        textAlign: "center",
-                        color: "var(--accent-text)",
-                      }}
-                    >
-                      Connect to the {CONFIG.NETWORK.NAME} network
-                    </s.TextDescription>
-                    <s.SpacerSmall />
-                    <StyledButton
-                        onClick={(e) => {
-                          e.preventDefault();
-                          web3Modal.clearCachedProvider();
-                          web3Modal.connect().then((connectedProvider) => {
-                            dispatch(connect(connectedProvider));
-                            getData();
-                          }).catch(e => {
-                            console.log(e);
-                            setFeedback("It seems that user closed the WalletConnect pop-up.");
-                            setClaimingNft(false);
-                          });
-                        }}
-                    >
-                      CONNECT
-                    </StyledButton>
                     {blockchain.errorMsg !== "" ? (
                       <>
-                        <s.SpacerSmall />
                         <s.TextDescription
                           style={{
                             textAlign: "center",
@@ -355,7 +336,6 @@ function App() {
                     >
                       {feedback}
                     </s.TextDescription>
-                    <s.SpacerMedium />
                     <s.Container ai={"center"} jc={"center"} fd={"row"}>
                       <StyledRoundButton
                         style={{ lineHeight: 0.4 }}
@@ -367,7 +347,6 @@ function App() {
                       >
                         -
                       </StyledRoundButton>
-                      <s.SpacerMedium />
                       <s.TextDescription
                         style={{
                           textAlign: "center",
@@ -376,7 +355,6 @@ function App() {
                       >
                         {mintAmount}
                       </s.TextDescription>
-                      <s.SpacerMedium />
                       <StyledRoundButton
                         disabled={claimingNft ? 1 : 0}
                         onClick={(e) => {
@@ -387,7 +365,6 @@ function App() {
                         +
                       </StyledRoundButton>
                     </s.Container>
-                    <s.SpacerSmall />
                     <s.Container ai={"center"} jc={"center"} fd={"row"}>
                       <StyledButton
                         disabled={claimingNft ? 1 : 0}
@@ -404,39 +381,20 @@ function App() {
                 )}
               </>
             )}
-            <s.SpacerMedium />
           </s.Container>
-          <s.SpacerLarge />
           <s.Container flex={1} jc={"center"} ai={"center"}>
-            <StyledImg
-              alt={"example"}
-              src={"/config/images/example.png"}
-              style={{ transform: "scaleX(-1)" }}
-            />
           </s.Container>
         </ResponsiveWrapper>
-        <s.SpacerMedium />
         <s.Container jc={"center"} ai={"center"} style={{ width: "70%" }}>
           <s.TextDescription
+            className="disclaimer"
             style={{
               textAlign: "center",
               color: "var(--primary-text)",
+              width: "50%",
             }}
           >
-            DISCLAIMER: ALL SALES AND ROYALTIES WILL BE TRANSFERRED TO UKRAINE'S CRYPTO WALLET.
-            Please make sure you are connected to the correct network (
-            {CONFIG.NETWORK.NAME} Mainnet) on your metamask. Please note:
-            Once you make the purchase, you cannot undo this action.
-          </s.TextDescription>
-          <s.SpacerSmall />
-          <s.TextDescription
-            style={{
-              textAlign: "center",
-              color: "var(--primary-text)",
-            }}
-          >
-            We have set the gas limit to {CONFIG.GAS_LIMIT} for the contract to
-            successfully mint your NFT. We recommend that you don't lower the
+            We recommend that you don't lower the
             gas limit.
           </s.TextDescription>
         </s.Container>
